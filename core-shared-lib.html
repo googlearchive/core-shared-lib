@@ -66,7 +66,7 @@ Whenever possible, use **import** (`<link rel="import" href="...">`) instead.
   }
   
   function nameFromUrl(url) {
-    return url.replace(/[\:\/\%\?\.\=]/g, '_') + '_api';
+    return url.replace(/[\:\/\%\?\&\.\=]/g, '_') + '_api';
   }
 
   var Loader = function(name, url) {
@@ -110,6 +110,7 @@ Whenever possible, use **import** (`<link rel="import" href="...">`) instead.
     },
     
     success: function() {
+      this.loaded = true;
       this.cleanup();
       this.result = Array.prototype.slice.call(arguments);
       this.instances.forEach(this.provide, this);

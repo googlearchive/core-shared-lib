@@ -18,12 +18,14 @@ loaded from the network.
 
 Currently, the library must support JSONP to work as a shared-lib. 
 
+Some libraries require a specific global function be defined. If this is the case, specify the `callbackName` property.
+
 Whenever possible, use **import** (`<link rel="import" href="...">`) instead.
 
 @group Polymer Core Elements
 @element core-shared-lib
 -->
-<polymer-element name="core-shared-lib" attributes="url notifyEvent">
+<polymer-element name="core-shared-lib" attributes="url notifyEvent callbackName">
 <script>
 (function() {
   
@@ -38,7 +40,7 @@ Whenever possible, use **import** (`<link rel="import" href="...">`) instead.
     },
     
     urlChanged: function() {
-      require(this.url, this);
+      require(this.url, this, this.callbackName);
     },
     
     provide: function() {
@@ -53,14 +55,14 @@ Whenever possible, use **import** (`<link rel="import" href="...">`) instead.
 
   var apiMap = {};
   
-  function require(url, notifiee) {
+  function require(url, notifiee, callbackName) {
     // make hashable string form url
     var name = nameFromUrl(url);
     // lookup existing loader instance
     var loader = apiMap[name];
     // create a loader as needed
     if (!loader) {
-      loader = apiMap[name] = new Loader(name, url);
+      loader = apiMap[name] = new Loader(name, url, callbackName);
     }
     loader.requestNotify(notifiee);
   }
@@ -69,16 +71,20 @@ Whenever possible, use **import** (`<link rel="import" href="...">`) instead.
     return url.replace(/[\:\/\%\?\&\.\=]/g, '_') + '_api';
   }
 
-  var Loader = function(name, url) {
+  var Loader = function(name, url, callbackName) {
     this.instances = [];
-    //
-    if (url.indexOf(this.callbackMacro) >= 0) {
-      this.callbackName = name + '_loaded';
+    this.callbackName = callbackName;
+    if (this.callbackName) {
       window[this.callbackName] = this.success.bind(this);
-      url = url.replace(this.callbackMacro, this.callbackName);
     } else {
-      // TODO(sjmiles): we should probably fallback to listening to script.load
-      throw 'core-shared-api: a %%callback%% parameter is required in the API url';
+      if (url.indexOf(this.callbackMacro) >= 0) {
+        this.callbackName = name + '_loaded';
+        window[this.callbackName] = this.success.bind(this);
+        url = url.replace(this.callbackMacro, this.callbackName);
+      } else {
+        // TODO(sjmiles): we should probably fallback to listening to script.load
+        throw 'core-shared-api: a %%callback%% parameter is required in the API url';
+      }
     }
     //
     this.addScript(url);

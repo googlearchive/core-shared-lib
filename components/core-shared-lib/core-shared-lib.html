@@ -105,7 +105,13 @@ lib.html:
       script.src = src;
       script.onerror = this.error.bind(this);
       var s = document.querySelector('script');
-      s.parentNode.insertBefore(script, s);
+      if (s) {
+        s.parentNode.insertBefore(script, s);
+      } else {
+        s = docoment.querySelector('head');
+        script.async = true;
+        s.appendChild(script);
+      }
       this.script = script;
     },
     

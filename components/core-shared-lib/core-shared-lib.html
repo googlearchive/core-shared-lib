@@ -108,7 +108,7 @@ lib.html:
       if (s) {
         s.parentNode.insertBefore(script, s);
       } else {
-        s = docoment.querySelector('head');
+        s = document.querySelector('head');
         script.async = true;
         s.appendChild(script);
       }
